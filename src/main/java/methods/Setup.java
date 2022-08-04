@@ -5,10 +5,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Scanner;
 
-public class Setup
-{
-    public static void init(File file) throws IOException
-    {
+public class Setup {
+    public static void init(File file) throws IOException {
         System.out.println("Hello! Thank you for using CHScrobbler. This seems like your first time using the program! " +
             "I'll get you started.\n");
 

@@ -19,58 +19,39 @@ public class ScrobblerManager
     private static String trackArtist = "", trackTitle = "";
     private static int timestamp;
 
-    public static void init(Session s)
-    {
+    public static void init(Session s) {
         session = s;
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(ScrobblerManager::scrobble, 0, 1, TimeUnit.SECONDS);
     }
 
-    private static void scrobble()
-    {
-        try
-        {
+    private static void scrobble() {
+        try {
             File file = new File("currentsong.txt");
-            if(!file.exists())
-            {
+            if(!file.exists()) {
                 System.out.print("\rUnable to find 'currentsong.txt'! Please make sure you have \"Export Current Song\" enabled in Settings.");
-            }
-
-            else
-            {
+            } else {
                 List<String> trackInfo = Files.readAllLines(Paths.get("currentsong.txt"));
-                if(trackInfo.size() > 0)
-                {
+                if(trackInfo.size() > 0) {
                     //removes the song speed modifier from the title
                     String correctedTitle = trackInfo.get(0).replaceAll("(\\(\\d+%\\))", "").trim();
 
-                    if(!trackArtist.equalsIgnoreCase(trackInfo.get(1)) && !trackTitle.equalsIgnoreCase(correctedTitle))
-                    {
+                    if(!trackArtist.equalsIgnoreCase(trackInfo.get(1)) && !trackTitle.equalsIgnoreCase(correctedTitle)) {
                         timestamp = (int) (System.currentTimeMillis() / 1000);
                         trackArtist = trackInfo.get(1);
                         trackTitle = correctedTitle;
 
-                        if(!playing)
-                        {
+                        if(!playing) {
                             CHScrobbler.getLogger().info("Now Playing: " + trackInfo.get(1) + " - " + correctedTitle);
                             playing = true;
                         }
-                    }
-
-                    else
-                    {
-                        if(!attemptedScrobble)
-                        {
-                            if(System.currentTimeMillis()/1000 - timestamp >= 25)
-                            {
+                    } else {
+                        if(!attemptedScrobble) {
+                            if(System.currentTimeMillis()/1000 - timestamp >= 25) {
                                 ScrobbleResult result = Track.scrobble(trackArtist, correctedTitle, timestamp, session);
 
-                                if(result.isSuccessful() && !result.isIgnored())
-                                {
+                                if(result.isSuccessful() && !result.isIgnored()) {
                                     CHScrobbler.getLogger().info("Scrobbled the currently playing song!");
-                                }
-
-                                else
-                                {
+                                } else {
                                     CHScrobbler.getLogger().warn("Couldn't scrobble the currently playing song!");
                                 }
 
@@ -78,26 +59,18 @@ public class ScrobblerManager
                             }
                         }
                     }
-                }
-
-                else
-                {
-                    if(playing)
-                    {
+                } else {
+                    if(playing) {
                         playing = false;
                         attemptedScrobble = false;
                         trackArtist = "";
                         trackTitle = "";
                         timestamp = 0;
-
                         System.out.print("Currently not playing anything!\r");
                     }
                 }
             }
-        }
-
-        catch(IOException e)
-        {
+        } catch(IOException e) {
             System.out.println("Sorry, couldn't find or read the 'currentsong.txt' file! Please try opening this app again.");
             Executors.newSingleThreadScheduledExecutor().schedule(() -> System.exit(0), 5, TimeUnit.SECONDS);
         }
